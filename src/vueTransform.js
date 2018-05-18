@@ -262,6 +262,15 @@ export default async function vueTransform (code, id, options) {
          `.replace(/(\r?\n|[\s])+/g, ' ').trim()
 
         return { css, code: styleCode + js.code, map: js.map }
+    } else if (options.useSpfxThemeLoading === true){
+        console.log("useSpfxThemeLoading:" + js.code);
+        const importCode = "import { loadStyles } from '@microsoft/load-themed-styles';"; 
+
+        const style = css.map(s => '$compiled' in s ? s.$compiled.code : s.code).join('\n').replace(/(\r?\n|[\s])+/g, ' ')
+        var codeWithCss = js.code.replace("injectCss", "beforeCreate(){ loadStyles(" + JSON.stringify(style) + ");}");
+        //     css.map((s, i) => `loadStyles(${JSON.stringify(style)});`).join('\r\n')
+
+        return { css, code: importCode + codeWithCss, map: js.map }
     }
 
     return { css, code: js.code, map: js.map }
